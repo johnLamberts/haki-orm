@@ -1,6 +1,6 @@
 {
-  "name": "@haki/savy-orm",
-  "version": "1.0.0",
+  "name": "@haki-orm/mysql",
+  "version": "1.0.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
@@ -14,14 +14,15 @@
     "dev": "ts-node-dev --respawn src/index.ts",
     "test": "jest",
     "perf": "ts-node src/tests/performance-suite.ts",
-    "test:performance:quick": "ts-node tests/performance-suite.ts --quick",    "test:watch": "jest --watchAll",
+    "test:performance:quick": "ts-node tests/performance-suite.ts --quick",
+    "test:watch": "jest --watchAll",
     "test:coverage": "jest --coverage",
     "migrate:up": "ts-node src/cli/migrate.ts up",
     "migrate:down": "ts-node src/cli/migrate.ts down",
     "seed": "ts-node src/cli/seed.ts"
   },
   "keywords": [
-     "mysql",
+    "mysql",
     "orm",
     "typescript",
     "database",
@@ -37,12 +38,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/johnLamberts/savy-orm.git"
+    "url": "git+https://github.com/johnLamberts/savy-orm.git"
   },
   "bugs": {
     "url": "https://github.com/johnLamberts/savy-orm.git/issues"
   },
-  "description": "",
   "devDependencies": {
     "@jest/globals": "^30.2.0",
     "@types/jest": "^30.0.0",
@@ -55,5 +55,11 @@
   "dependencies": {
     "dotenv": "^17.2.3",
     "mysql2": "^3.15.3"
-  }
+  },
+  "directories": {
+    "example": "examples",
+    "test": "tests"
+  },
+  "homepage": "https://github.com/johnLamberts/savy-orm#readme",
+  "description": ""
 }
