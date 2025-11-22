@@ -30,21 +30,21 @@ A lightweight, TypeScript-first ORM for Node.js built on MySQL. Inspired by Lara
 
 ### Advanced Features
 - **Repository Pattern**: Clean data access layer
-- **Pagination**: Multiple pagination strategies (standard, simple, cursor)
+<!-- - **Pagination**: Multiple pagination strategies (standard, simple, cursor)
 - **Soft Deletes**: Non-destructive data deletion
 - **Schema Management**: Index and trigger management
 - **Job Scheduling**: Cron-like task scheduling
-- **Database Jobs**: Pre-built maintenance tasks
+- **Database Jobs**: Pre-built maintenance tasks -->
 
 ### Utilities
-- **Query Logging**: Track and analyze SQL queries
-- **Batch Processing**: Efficient bulk operations
-- **SQL Sanitization**: Prevent SQL injection
-- **Caching**: Flexible caching layer
+<!-- - **Query Logging**: Track and analyze SQL queries -->
+<!-- - **Batch Processing**: Efficient bulk operations -->
+<!-- - **SQL Sanitization**: Prevent SQL injection -->
+<!-- - **Caching**: Flexible caching layer -->
 - **Data Generation**: Test data creation
 - **Performance Monitoring**: Track operation performance
-- **Validation**: Comprehensive data validation
-- **String Helpers**: Utility functions for strings
+<!-- - **Validation**: Comprehensive data validation -->
+<!-- - **String Helpers**: Utility functions for strings -->
 
 ## 📦 Installation
 
