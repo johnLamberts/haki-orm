@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+/* eslint-disable @typescript-eslint/require-await */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Pool, PoolConnection, PoolOptions, ResultSetHeader, createPool } from "mysql2/promise";
 import { IConnectionStats } from "../interfaces/connection-stats";
 import { IDatabaseConfig } from "../interfaces/database-config";

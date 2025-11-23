@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 export class SchemaBuilder {
   private tableName: string;
   private columns: string[] = [];

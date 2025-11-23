@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { Connection } from "../../core/connection";
 import { TTriggerEvent } from "../../types/trigger-event.type";
 import { TTriggerTiming } from "../../types/trigger-time.type";

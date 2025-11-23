@@ -1,4 +1,4 @@
-import { Connection } from '../src/core/connection';
+import { Connection } from "@/index";
 
 export async function setupTestDatabase() {
 

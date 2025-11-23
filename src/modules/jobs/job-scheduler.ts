@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/require-await */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
+/* eslint-disable @typescript-eslint/no-misused-promises */
 export class JobScheduler {
   private jobs: Map<string, IJob> = new Map();
   private intervals: Map<string, NodeJS.Timeout> = new Map();

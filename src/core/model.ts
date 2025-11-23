@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { ResultSetHeader } from "mysql2/promise";
 import { IModelConfig } from "../interfaces/model-config";
 import { Connection } from "./connection";
@@ -176,7 +181,6 @@ static async findOrFail<M extends Model>(this: new () => M, id: any): Promise<M>
   }
 
   fill(data: Partial<T>): this {
-    const config = (this.constructor as typeof Model)._config;
     const fillableData = (this.constructor as typeof Model).getFillableData(data);
     
     Object.assign(this.attributes, fillableData);

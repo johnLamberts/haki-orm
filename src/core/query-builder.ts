@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { IJoinClause } from "../interfaces/join-clause";
 import { IOrderClause } from "../interfaces/order-clause";
 import { IWhereClause } from "../interfaces/where-clause";
@@ -108,22 +113,22 @@ export class QueryBuilder<T = any> {
     return this;
   }
 
-  private addWhereClause(field: string, operator: TWhereOperator, value: any, logic: 'AND' | 'OR'): void {
-    this._whereClauses.push({
-      field,
-      operator,
-      value,
-      logic: this._whereClauses.length === 0 ? 'AND' : logic,
-    });
+  // private addWhereClause(field: string, operator: TWhereOperator, value: any, logic: 'AND' | 'OR'): void {
+  //   this._whereClauses.push({
+  //     field,
+  //     operator,
+  //     value,
+  //     logic: this._whereClauses.length === 0 ? 'AND' : logic,
+  //   });
 
-    if (value !== undefined && operator !== 'IS NULL' && operator !== 'IS NOT NULL') {
-      if (operator === 'IN' || operator === 'NOT IN') {
-        this._params.push(...value);
-      } else {
-        this._params.push(value);
-      }
-    }
-  }
+  //   if (value !== undefined && operator !== 'IS NULL' && operator !== 'IS NOT NULL') {
+  //     if (operator === 'IN' || operator === 'NOT IN') {
+  //       this._params.push(...value);
+  //     } else {
+  //       this._params.push(value);
+  //     }
+  //   }
+  // }
 
 
   join(table: string, on: string, type: TJoinType = 'INNER'): this {

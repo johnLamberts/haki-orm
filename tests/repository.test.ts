@@ -1,44 +1,41 @@
-import { Connection } from "../src/core/connection";
-import { Model } from "../src/core/model";
-import { Repository } from "../src/modules/repository";
+/* eslint-disable @typescript-eslint/require-await */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+import { Connection, Model, Repository } from "../src";
 
 interface TestUserAttributes {
   id?: number;
   email: string;
   name: string;
+  age: number;
   active?: boolean;
 }
 
-export class TestUser extends Model<TestUserAttributes> {
-  protected static _config = {
-    table: 'test_users_repo',
+class TestUser extends Model<TestUserAttributes> {
+  protected static override _config = {
+    table: 'test_users_complete',
     primaryKey: 'id',
   };
 }
 
-export class TestUserRepository extends Repository<TestUserAttributes, TestUser> {
+class TestUserRepository extends Repository<TestUserAttributes, TestUser> {
   constructor() {
     super(TestUser as any);
   }
 
   async findByEmail(email: string): Promise<TestUser | null> {
-    return await this.query()
-      .where('email', '=', email)
-      .first() as TestUser | null;
+    return await this.findOneWhere({ email });
   }
 
-  async findActiveUsers(): Promise<TestUser[]> {
-    return await this.query()
-      .where('active', '=', true)
-      .execute() as TestUser[];
+  async findAdults(): Promise<TestUser[]> {
+    return await this.findWhere({ active: true });
   }
 }
 
-describe('Repository', () => {
+describe('Repository Complete', () => {
   let repo: TestUserRepository;
 
   beforeAll(async () => {
-    Connection.initialize({
+    await Connection.initialize({
       host: process.env.DB_HOST || 'localhost',
       user: process.env.DB_USER || 'root',
       password: process.env.DB_PASSWORD || 'password',
@@ -48,10 +45,11 @@ describe('Repository', () => {
 
     const conn = Connection.getInstance();
     await conn.execute(`
-      CREATE TABLE IF NOT EXISTS test_users_repo (
+      CREATE TABLE IF NOT EXISTS test_users_complete (
         id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         email VARCHAR(255) NOT NULL,
         name VARCHAR(255) NOT NULL,
+        age INT NOT NULL,
         active BOOLEAN DEFAULT TRUE
       )
     `);
@@ -59,120 +57,116 @@ describe('Repository', () => {
 
   afterAll(async () => {
     const conn = Connection.getInstance();
-    await conn.execute('DROP TABLE IF EXISTS test_users_repo');
+    await conn.execute('DROP TABLE IF EXISTS test_users_complete');
     await Connection.getInstance().close();
   });
 
   beforeEach(async () => {
     const conn = Connection.getInstance();
-    await conn.execute('TRUNCATE TABLE test_users_repo');
+    await conn.execute('TRUNCATE TABLE test_users_complete');
     repo = new TestUserRepository();
   });
 
-  test('should create a record via repository', async () => {
-    const user = await repo.create({
-      email: 'test@example.com',
-      name: 'Test User',
+  test('should create multiple records', async () => {
+    await repo.createMany([
+      { email: 'user1@test.com', name: 'User 1', age: 25 },
+      { email: 'user2@test.com', name: 'User 2', age: 30 },
+    ]);
+
+    const count = await repo.count();
+    expect(count).toBe(2);
+  });
+
+  test('should find many by IDs', async () => {
+    const user1 = await repo.create({ email: 'user1@test.com', name: 'User 1', age: 25 });
+    const user2 = await repo.create({ email: 'user2@test.com', name: 'User 2', age: 30 });
+
+    const users = await repo.findMany([user1.get('id')!, user2.get('id')!]);
+    expect(users.length).toBe(2);
+  });
+
+  test('should update many records', async () => {
+    await repo.createMany([
+      { email: 'user1@test.com', name: 'User 1', age: 25, active: true },
+      { email: 'user2@test.com', name: 'User 2', age: 30, active: true },
+    ]);
+
+    const updated = await repo.updateMany({ active: true }, { age: 40 });
+    expect(updated).toBe(2);
+  });
+
+  test('should delete many records', async () => {
+    await repo.createMany([
+      { email: 'user1@test.com', name: 'User 1', age: 25, active: false },
+      { email: 'user2@test.com', name: 'User 2', age: 30, active: true },
+    ]);
+
+    const deleted = await repo.deleteMany({ active: false });
+    expect(deleted).toBe(1);
+    expect(await repo.count()).toBe(1);
+  });
+
+  test('should check existence', async () => {
+    await repo.create({ email: 'test@test.com', name: 'Test', age: 25 });
+    
+    expect(await repo.exists({ email: 'test@test.com' })).toBe(true);
+    expect(await repo.exists({ email: 'notfound@test.com' })).toBe(false);
+  });
+
+  test('should calculate aggregations', async () => {
+    await repo.createMany([
+      { email: 'user1@test.com', name: 'User 1', age: 20 },
+      { email: 'user2@test.com', name: 'User 2', age: 30 },
+      { email: 'user3@test.com', name: 'User 3', age: 40 },
+    ]);
+
+    expect(await repo.sum('age')).toBe(90);
+    expect(await repo.avg('age')).toBe(30);
+    expect(await repo.min('age')).toBe(20);
+    expect(await repo.max('age')).toBe(40);
+  });
+
+  test('should process in chunks', async () => {
+    await repo.createMany(
+      Array.from({ length: 100 }, (_, i) => ({
+        email: `user${i}@test.com`,
+        name: `User ${i}`,
+        age: 20 + i,
+      }))
+    );
+
+    let totalProcessed = 0;
+    await repo.chunk(25, async (items) => {
+      totalProcessed += items.length;
     });
 
-    expect(user.get('id')).toBeDefined();
-    expect(user.get('email')).toBe('test@example.com');
+    expect(totalProcessed).toBe(100);
   });
 
-  test('should find record by id', async () => {
-    const created = await repo.create({
-      email: 'find@example.com',
-      name: 'Find User',
-    });
+  test('should pluck values', async () => {
+    await repo.createMany([
+      { email: 'user1@test.com', name: 'User 1', age: 25 },
+      { email: 'user2@test.com', name: 'User 2', age: 30 },
+    ]);
 
-    const found = await repo.findById(created.get('id')!);
-    expect(found).not.toBeNull();
-    expect(found?.get('email')).toBe('find@example.com');
+    const emails = await repo.pluck('email');
+    expect(emails).toContain('user1@test.com');
+    expect(emails).toContain('user2@test.com');
   });
 
-  test('should find all records', async () => {
-    await repo.create({ email: 'user1@example.com', name: 'User 1' });
-    await repo.create({ email: 'user2@example.com', name: 'User 2' });
-    await repo.create({ email: 'user3@example.com', name: 'User 3' });
+  test('should paginate results', async () => {
+    await repo.createMany(
+      Array.from({ length: 50 }, (_, i) => ({
+        email: `user${i}@test.com`,
+        name: `User ${i}`,
+        age: 20 + i,
+      }))
+    );
 
-    const all = await repo.findAll();
-    expect(all.length).toBe(3);
-  });
-
-  test('should update record via repository', async () => {
-    const user = await repo.create({
-      email: 'update@example.com',
-      name: 'Original Name',
-    });
-
-    const updated = await repo.update(user.get('id')!, {
-      name: 'Updated Name',
-    });
-
-    expect(updated).not.toBeNull();
-    expect(updated?.get('name')).toBe('Updated Name');
-  });
-
-  test('should delete record via repository', async () => {
-    const user = await repo.create({
-      email: 'delete@example.com',
-      name: 'Delete User',
-    });
-
-    const result = await repo.delete(user.get('id')!);
-    expect(result).toBe(true);
-
-    const notFound = await repo.findById(user.get('id')!);
-    expect(notFound).toBeNull();
-  });
-
-  test('should find by column', async () => {
-    await repo.create({ email: 'custom@example.com', name: 'Custom User', active: true });
-
-    const found = await repo.findBy("email", 'custom@example.com');
-    expect(found).not.toBeNull();
-    expect(found?.get('name')).toBe('Custom User');
-  });
-
-  test('should find multiple records by a field using findByMany', async () => {
-  // Create some users
-    await repo.create({ email: 'multi1@example.com', name: 'Multi User 1', active: true });
-    await repo.create({ email: 'multi2@example.com', name: 'Multi User 2', active: true });
-    await repo.create({ email: 'multi1@example.com', name: 'Multi User 3', active: true });
-
-    // Use findByMany to get all users with email 'multi1@example.com'
-    const foundUsers = await repo.findManyBy('email', 'multi1@example.com');
-
-    expect(foundUsers.length).toBe(2); // There are 2 users with that email
-    expect(foundUsers[0]).toBeInstanceOf(TestUser);
-    expect(foundUsers[1]).toBeInstanceOf(TestUser);
-
-    // Check that names match
-    const names = foundUsers.map(u => u.get('name'));
-    expect(names).toContain('Multi User 1');
-    expect(names).toContain('Multi User 3');
-  });
-
-  test('should filter active users', async () => {
-    await repo.create({ email: 'active1@example.com', name: 'Active 1', active: true });
-    await repo.create({ email: 'inactive@example.com', name: 'Inactive', active: false });
-    await repo.create({ email: 'active2@example.com', name: 'Active 2', active: true });
-
-    const activeUsers = await repo.findActiveUsers();
-    expect(activeUsers.length).toBe(2);
-  });
-
-  test('should use query builder through repository', async () => {
-    await repo.create({ email: 'query1@example.com', name: 'Query User 1' });
-    await repo.create({ email: 'query2@example.com', name: 'Query User 2' });
-
-    const results = await repo.query()
-      .select('email', 'name')
-      .where('email', 'LIKE', 'query%')
-      .orderBy('name', 'ASC')
-      .execute();
-
-    expect(results.length).toBe(2);
+    const page1 = await repo.paginate(1, 10);
+    expect(page1.data.length).toBe(10);
+    expect(page1.meta.total).toBe(50);
+    expect(page1.meta.lastPage).toBe(5);
+    expect(page1.links.next).toBe(2);
   });
 });
-

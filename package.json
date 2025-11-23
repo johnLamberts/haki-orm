@@ -1,25 +1,39 @@
 {
   "name": "@haki-orm/mysql",
-  "version": "1.0.2",
+  "version": "1.0.0",
+  "description": "A blazing-fast, type-safe MySQL ORM for TypeScript - batteries included",
   "main": "dist/index.js",
-  "types": "dist/src/index.d.ts",
-  "type": "module",
+  "types": "dist/index.d.ts",
   "files": [
     "dist",
     "README.md",
+    "README-ADVANCED.md",
     "LICENSE"
   ],
   "scripts": {
     "build": "tsc",
-    "dev": "ts-node-dev --respawn src/index.ts",
-    "test": "jest",
-    "perf": "ts-node src/tests/performance-suite.ts",
-    "test:performance:quick": "ts-node tests/performance-suite.ts --quick",
-    "test:watch": "jest --watchAll",
-    "test:coverage": "jest --coverage",
-    "migrate:up": "ts-node src/cli/migrate.ts up",
-    "migrate:down": "ts-node src/cli/migrate.ts down",
-    "seed": "ts-node src/cli/seed.ts"
+    "build:watch": "tsc --watch",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean",
+    "test": "jest --runInBand",
+    "test:unit": "jest tests/unit --runInBand",
+    "test:advanced": "jest tests/advanced --runInBand",
+    "test:utils": "jest tests/utils --runInBand",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage --runInBand",
+    "test:verbose": "jest --verbose --runInBand",
+    "test:performance": "ts-node -r tsconfig-paths/register tests/performance/performance-suite.ts",
+    "test:performance:quick": "ts-node -r tsconfig-paths/register tests/performance/performance-suite.ts --quick",
+    "lint": "eslint src/**/*.ts tests/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts tests/**/*.ts --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "prepublishOnly": "npm run build && npm test",
+    "prepare": "npm run build",
+    "preversion": "npm test",
+    "version": "npm run format && git add -A src",
+    "postversion": "git push && git push --tags"
   },
   "keywords": [
     "mysql",
@@ -30,36 +44,44 @@
     "query-builder",
     "active-record",
     "repository",
-    "migrations",
+    "type-safe",
     "performance",
-    "type-safe"
+    "haki",
+    "mysql2",
+    "batteries-included"
   ],
-  "author": "John Lambert P. Asis <asisjohnlambert5@gmail.com>",
+  "author": "Your Name <your.email@example.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/johnLamberts/savy-orm.git"
+    "url": "https://github.com/yourusername/haki-orm-mysql.git"
   },
   "bugs": {
-    "url": "https://github.com/johnLamberts/savy-orm.git/issues"
+    "url": "https://github.com/yourusername/haki-orm-mysql/issues"
   },
-  "devDependencies": {
-    "@jest/globals": "^30.2.0",
-    "@types/jest": "^30.0.0",
-    "@types/node": "^24.10.1",
-    "jest": "^30.2.0",
-    "ts-jest": "^29.4.5",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+  "homepage": "https://github.com/yourusername/haki-orm-mysql#readme",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
   },
   "dependencies": {
+    "mysql2": "^3.9.1"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "@types/dotenv": "^8.2.3",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
     "dotenv": "^17.2.3",
-    "mysql2": "^3.15.3"
-  },
-  "directories": {
-    "example": "examples",
-    "test": "tests"
-  },
-  "homepage": "https://github.com/johnLamberts/savy-orm#readme",
-  "description": ""
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.2.4",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.3.3"
+  }
 }

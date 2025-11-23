@@ -2,9 +2,9 @@ import { PoolConnection, RowDataPacket } from "mysql2/promise";
 import { Connection } from "./connection";
 
 export class Transaction {
-  private _connection?: PoolConnection;
+  private _connection: PoolConnection;
   private completed = false;
-
+  private _rolledBack = false;
 
   constructor(connection: PoolConnection) {
     this._connection = connection;
@@ -13,7 +13,10 @@ export class Transaction {
   async begin(): Promise<void> {
     if(!this._connection) return;
 
-    await this._connection?.beginTransaction();
+    if(this.completed) 
+      throw new Error('Transaction already completed');
+
+    await this._connection.beginTransaction();
   }
 
 
@@ -22,19 +25,25 @@ export class Transaction {
       throw new Error('Transaction already completed')
     }
 
-    await this._connection?.commit();
+    if(this._rolledBack)
+        throw new Error('Transaction was rolled back.');
+
+    await this._connection.commit();
     this.completed = true;
-    this._connection?.release();
+    this._connection.release();
   }
 
   async rollback(): Promise<void> {
-     if(this.completed) {
+    if(this.completed) {
       throw new Error('Transaction already completed')
     }
 
-    await this._connection?.rollback();
-    this.completed = true;
-    this._connection?.release();
+
+    if(!this._rolledBack) {
+      await this._connection.rollback();
+      this.completed = true;
+      this._connection?.release();
+    }
   }
 
   async query<T = any>(sql: string, values?: any[]): Promise<T[]> {
@@ -45,6 +54,15 @@ export class Transaction {
   const [rows] = await this._connection.execute<RowDataPacket[]>(sql, values);
   return rows as unknown as T[];
   }
+
+  isCompleted(): boolean {
+    return this.completed;
+  }
+
+  isRolledBack(): boolean {
+    return this._rolledBack;
+  }
+
 
   static async run<T>(callback: (trx: Transaction) => Promise<T>): Promise<T> {
     const conn = Connection.getInstance();
@@ -62,4 +80,16 @@ export class Transaction {
       throw error;
     }
   } 
+
+  static async batch<T>(callbacks: Array<(trx: Transaction) => Promise<T>>): Promise<T[]> {
+    const results: T[] = [];
+
+    await this.run(async(trx) => {
+      for(const callback of callbacks) {
+        const result = await callback(trx);
+        results.push(result);
+      }
+    });
+    return results;
+  }
 }
